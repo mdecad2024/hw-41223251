@@ -166,8 +166,8 @@ openByGet();
 <p><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="allowfullscreen" frameborder="0" height="315" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/VXHoOXLfdE4?si=OBFCWZ_UUYplXySM" title="YouTube video player" width="560"></iframe></p>
 <p></p>
 <script src="/static/jsc3d.js" type="text/javascript"></script>
-<!-- 使用 flexbox 来并排显示两个 canvas -->
-<div id="models" style="display: flex; justify-content: space-between;"><canvas height="300" id="cv1" style="border: 1px solid;" width="400"></canvas> <canvas height="300" id="cv2" style="border: 1px solid;" width="400"></canvas></div>
+<!-- 使用 flexbox 来并排显示三个 canvas -->
+<div id="models" style="display: flex; justify-content: space-between;"><canvas height="300" id="cv1" style="border: 1px solid;" width="400"></canvas> <canvas height="300" id="cv2" style="border: 1px solid;" width="400"></canvas> <canvas height="300" id="cv3" style="border: 1px solid;" width="400"></canvas> <!-- 新增的canvas --></div>
 <div style="width: 400px; height: 70px; border: 1px solid;">Model Color: <input id="mdlClr" onchange="changeOption('ModelColor',this.value)" style="margin-right: 50px;" type="color" value="#00ff40"/> Back Color1: <input id="bckClr1" onchange="changeOption('BackgroundColor1',this.value)" style="margin-right: 50px;" type="color"/> Back Color2: <input id="bckClr2" onchange="changeOption('BackgroundColor2',this.value)" type="color"/><br/> Render Mode:<select id="render" onchange="changeOption('RenderMode',this.value)">
 <option>Flat</option>
 <option>Point</option>
@@ -179,61 +179,64 @@ openByGet();
 <option>high</option>
 </select></div>
 <script type="text/javascript">
-var viewers = [];
+var viewers = []; // 保存所有的渲染实例
 
 function getOptions(){
-    var mc = document.getElementById("mdlClr").value;
-    var bc1 = document.getElementById("bckClr1").value;
-    var bc2 = document.getElementById("bckClr2").value;
-    var ren = document.getElementById("render").value;
-    var def = document.getElementById("defini").value;
+    var mc = document.getElementById("mdlClr").value; // 获取模型颜色
+    var bc1 = document.getElementById("bckClr1").value; // 获取背景颜色1
+    var bc2 = document.getElementById("bckClr2").value; // 获取背景颜色2
+    var ren = document.getElementById("render").value; // 获取渲染模式
+    var def = document.getElementById("defini").value; // 获取分辨率
     return {ModelColor: mc, BackgroundColor1: bc1, BackgroundColor2: bc2, RenderMode: ren, Definition: def};
 }
 
 function readSTLfile(opt, canvasId){
-    var canvas = document.getElementById(canvasId);
-    var viewer = new JSC3D.Viewer(canvas);
-    viewer.setParameter('SceneUrl', opt.SceneUrl);
+    var canvas = document.getElementById(canvasId); 
+    var viewer = new JSC3D.Viewer(canvas); // 创建 JSC3D 渲染实例
+    viewer.setParameter('SceneUrl', opt.SceneUrl); // 设置 STL 文件 URL
     viewer.setParameter('InitRotationX', 0);
     viewer.setParameter('InitRotationY', 0);
     viewer.setParameter('InitRotationZ', 0);
-    viewer.setParameter('ModelColor', opt.ModelColor);
-    viewer.setParameter('BackgroundColor1', opt.BackgroundColor1);
-    viewer.setParameter('BackgroundColor2', opt.BackgroundColor2);
-    viewer.setParameter('RenderMode', opt.RenderMode);
-    viewer.setParameter('Definition', opt.Definition);
-    viewer.init();
-    viewer.update();
+    viewer.setParameter('ModelColor', opt.ModelColor); // 设置模型颜色
+    viewer.setParameter('BackgroundColor1', opt.BackgroundColor1); // 设置背景颜色1
+    viewer.setParameter('BackgroundColor2', opt.BackgroundColor2); // 设置背景颜色2
+    viewer.setParameter('RenderMode', opt.RenderMode); // 设置渲染模式
+    viewer.setParameter('Definition', opt.Definition); // 设置分辨率
+    viewer.init(); // 初始化视图
+    viewer.update(); // 更新视图
     viewers.push(viewer); // 保存 viewer 实例
 }
 
-function changeOption(strOpt,strValue){
+function changeOption(strOpt, strValue){
     console.log("change " + strOpt + " to " + strValue);
     viewers.forEach(viewer => {
-        viewer.setParameter(strOpt, strValue);
-        viewer.init();
-        viewer.update();
+        viewer.setParameter(strOpt, strValue); // 更新选项
+        viewer.init(); // 重新初始化
+        viewer.update(); // 更新视图
     });
 }
 
 function openByUrl(){
-    var url = document.getElementById("url").value;
-    var opt = getOptions();
+    var url = document.getElementById("url").value; // 获取用户输入的 URL
+    var opt = getOptions(); // 获取当前选项
     opt.SceneUrl = url;
-    // 可以添加更多的 STL URL
-    readSTLfile(opt, 'cv1'); // 为第一个 canvas 调用
-    readSTLfile(opt, 'cv2'); // 为第二个 canvas 调用
+    // 为每个canvas渲染相同的模型
+    readSTLfile(opt, 'cv1');
+    readSTLfile(opt, 'cv2');
+    readSTLfile(opt, 'cv3'); // 为新增加的canvas加载模型
 }
 
 function openByGet(){
     var urls = [
         "https://s104.cycu.org/~41223251/41223251w11_hw1.stl",
-        "https://s104.cycu.org/~41223251/41223251w11_hw2.stl"
+        "https://s104.cycu.org/~41223251/41223251w11_hw2.stl",
+ "https://s104.cycu.org/~41223251/412232511220.stl",
     ];
     var opt = getOptions();
     urls.forEach((url, index) => {
         opt.SceneUrl = url;
-        readSTLfile(opt, 'cv' + (index + 1)); // 动态生成 canvas ID
+        // 根据索引动态生成 canvas ID
+        readSTLfile(opt, 'cv' + (index + 1));
     });
 }
 
